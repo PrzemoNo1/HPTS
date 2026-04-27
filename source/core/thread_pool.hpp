@@ -8,7 +8,7 @@ namespace core
 class ThreadPool
 {
 public:
-    ThreadPool(int threads);
+    ThreadPool(uint8_t threads);
     ~ThreadPool();
     void submit(Task task);
 

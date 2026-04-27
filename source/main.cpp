@@ -3,7 +3,9 @@
 
 int main(int argc, char* argv[])
 {
-    core::ThreadPool tp(-1);
-    tp.submit([](){ std::cout << "Task submitted from main" << std::endl; });
+    core::ThreadPool tp(2);
+    tp.submit([](){ std::cout << "Task A submitted from main" << std::endl; });
+    tp.submit([](){ std::cout << "Task B submitted from main" << std::endl; });
+    tp.submit([](){ std::cout << "Task C submitted from main" << std::endl; });
     return 0;
 }
