@@ -1,7 +1,7 @@
 #include "thread_pool.hpp"
 
 #include <thread>
-
+#include <queue>
 #include <iostream>
 
 namespace core
@@ -20,13 +20,23 @@ public:
         m_thread.join();
     }
 
+    void submit(Task task)
+    {
+        m_tasks.emplace(task);
+    }
+
 private:
     void takeTask()
     {
         std::cout << "Taking task" << std::endl;
+
+        Task task = m_tasks.front();
+        m_tasks.pop();
+        task();
     }
 
     std::thread m_thread;
+    std::queue<Task> m_tasks;
 };
 
 ThreadPool::ThreadPool(int threads)
@@ -41,7 +51,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::submit(Task task)
 {
-
+    m_impl->submit(std::move(task));
 }
 
 } // namespace core
