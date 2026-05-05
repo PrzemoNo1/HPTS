@@ -37,6 +37,7 @@ public:
 
     void submit(Task task)
     {
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.emplace(task);
     }
 
