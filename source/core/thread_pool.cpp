@@ -23,7 +23,7 @@ public:
         m_threads.reserve(threads);
         for (int i = 0; i < threads; ++i)
         {
-            m_threads.emplace_back(std::bind(Impl::takeTask, this));
+            m_threads.emplace_back(&Impl::takeTask, this);
         }
     }
 
