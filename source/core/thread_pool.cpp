@@ -42,9 +42,19 @@ public:
 private:
     void takeTask()
     {
-        m_mutex.lock();
-        while (!m_tasks.empty())
+        while (m_waitings < 8)
         {
+            m_mutex.lock();
+            if (m_tasks.empty())
+            {
+                m_mutex.unlock();
+                std::cout << std::this_thread::get_id() << ": Go to sleep" << std::endl;
+                std::chrono::milliseconds sec(1000);
+                std::this_thread::sleep_for(sec);
+                ++m_waitings;
+                continue;
+            }
+            m_waitings = 0;
             std::cout << std::this_thread::get_id() << ": Taking task" << std::endl;
 
             Task task = m_tasks.front();
@@ -57,6 +67,7 @@ private:
     std::vector<std::thread> m_threads;
     std::queue<Task> m_tasks;
     std::mutex m_mutex;
+    uint8_t m_waitings{0};
 };
 
 ThreadPool::ThreadPool(uint8_t threads)
