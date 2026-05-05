@@ -4,6 +4,7 @@
 #include <queue>
 #include <iostream>
 #include <mutex>
+#include <condition_variable>
 
 namespace core
 {
@@ -29,6 +30,12 @@ public:
 
     ~Impl()
     {
+        if (!m_stop)
+        {
+            m_stop = true;
+            m_cv.notify_all();
+        }
+  
         for (auto& thread : m_threads)
         {
             thread.join();
@@ -39,29 +46,25 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.emplace(task);
+        m_cv.notify_all();
     }
 
 private:
     void takeTask()
     {
-        while (m_waitings < 3)
+        while (true && !m_stop)
         {
-            m_mutex.lock();
-            if (m_tasks.empty())
-            {
-                m_mutex.unlock();
-                std::cout << std::this_thread::get_id() << ": Go to sleep" << std::endl;
-                std::chrono::milliseconds sec(1000);
-                std::this_thread::sleep_for(sec);
-                ++m_waitings;
-                continue;
-            }
-            m_waitings = 0;
+            std::unique_lock<std::mutex> locker(m_mutex);//.lock();
+            m_cv.wait(locker, [&](){return !m_tasks.empty() || m_stop; });
+
+            if (m_stop)
+                return;
+
             std::cout << std::this_thread::get_id() << ": Taking task" << std::endl;
 
             Task task = m_tasks.front();
             m_tasks.pop();
-            m_mutex.unlock();
+            locker.unlock();
             task();
         }
     }
@@ -69,7 +72,9 @@ private:
     std::vector<std::thread> m_threads;
     std::queue<Task> m_tasks;
     std::mutex m_mutex;
-    uint8_t m_waitings{0};
+
+    std::condition_variable m_cv;
+    bool m_stop = false;
 };
 
 ThreadPool::ThreadPool(uint8_t threads)

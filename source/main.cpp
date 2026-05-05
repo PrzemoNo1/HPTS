@@ -19,6 +19,9 @@ int main(int argc, char* argv[])
         std::cout << "Finished task A" << std::endl;
     });
     tp.submit([](){ std::cout << "Task B submitted from main" << std::endl; });
-    tp.submit([](){ std::cout << "Task C submitted from main" << std::endl; });
+    //tp.submit([](){ std::cout << "Task C submitted from main" << std::endl; });
+
+    std::this_thread::sleep_for(std::chrono::seconds(12));
+
     return 0;
 }
