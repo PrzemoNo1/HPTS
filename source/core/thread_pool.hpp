@@ -1,4 +1,5 @@
 #include <functional>
+#include <memory>
 
 using Task = std::function<void()>;
 
@@ -14,7 +15,7 @@ public:
 
 private:
     class Impl;
-    Impl* m_impl;
+    std::unique_ptr<Impl> m_impl;
 };
 
 } // namespace core

@@ -79,13 +79,10 @@ private:
 
 ThreadPool::ThreadPool(uint8_t threads)
 {
-    m_impl = new Impl(threads);
+    m_impl = std::make_unique<Impl>(threads);
 }
 
-ThreadPool::~ThreadPool()
-{
-    delete m_impl;
-}
+ThreadPool::~ThreadPool() = default;
 
 void ThreadPool::submit(Task task)
 {
