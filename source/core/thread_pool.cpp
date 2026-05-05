@@ -13,7 +13,8 @@ class ThreadPool::Impl
 public:
     Impl(uint8_t threads)
     {
-        const uint8_t& maxThreads = std::thread::hardware_concurrency();
+        unsigned int maxThreads = std::thread::hardware_concurrency();
+        if (maxThreads == 0) maxThreads = 2;
         if (threads > maxThreads)
         {
             std::cout << "Warning: Changing threads number from " << threads << " to " << maxThreads << std::endl;
@@ -42,7 +43,7 @@ public:
 private:
     void takeTask()
     {
-        while (m_waitings < 8)
+        while (m_waitings < 3)
         {
             m_mutex.lock();
             if (m_tasks.empty())
