@@ -46,7 +46,7 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_tasks.emplace(task);
-        m_cv.notify_all();
+        m_cv.notify_one();
     }
 
 private:
