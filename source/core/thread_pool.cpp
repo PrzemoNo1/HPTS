@@ -52,12 +52,12 @@ public:
 private:
     void takeTask()
     {
-        while (true && !m_stop)
+        while (true)
         {
             std::unique_lock<std::mutex> locker(m_mutex);//.lock();
             m_cv.wait(locker, [&](){return !m_tasks.empty() || m_stop; });
 
-            if (m_stop)
+            if (m_stop && m_tasks.empty())
                 return;
 
             std::cout << std::this_thread::get_id() << ": Taking task" << std::endl;
