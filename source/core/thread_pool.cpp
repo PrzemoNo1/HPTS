@@ -30,11 +30,12 @@ public:
 
     ~Impl()
     {
-        if (!m_stop)
+
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             m_stop = true;
-            m_cv.notify_all();
         }
+        m_cv.notify_all();
   
         for (auto& thread : m_threads)
         {
@@ -62,7 +63,7 @@ private:
 
             std::cout << std::this_thread::get_id() << ": Taking task" << std::endl;
 
-            Task task = m_tasks.front();
+            Task task = std::move(m_tasks.front());
             m_tasks.pop();
             locker.unlock();
             task();
