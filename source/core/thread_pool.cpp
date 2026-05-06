@@ -9,6 +9,12 @@
 namespace core
 {
 
+// TODO
+// 
+// returning std::future from submit
+// task prioritization
+// work stealing (advanced)
+
 class ThreadPool::Impl
 {
 public:
