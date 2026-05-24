@@ -8,7 +8,7 @@
 
 namespace core
 {
-
+using InnerTask = std::function<void()>;
 // TODO
 // 
 // returning std::future from submit
@@ -49,11 +49,27 @@ public:
         }
     }
 
-    void submit(Task task)
+    std::future<int> submit(Task task)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_tasks.emplace(std::move(task));
+        std::promise<int>* p = new std::promise<int>;
+        std::future<int> f = p->get_future();
+        InnerTask innerTask = [task, p]() {
+            int result = task();
+            std::cout << "Inner task after executing task" << std::endl;
+            try {
+                p->set_value(result);
+            }
+            catch (...)
+            {
+                std::cout << "Error after setting value";
+            }
+            std::cout << "Inner task after executing task2" << std::endl;
+        };
+        m_tasks.emplace(std::move(innerTask));
         m_cv.notify_one();
+
+        return f;
     }
 
 private:
@@ -69,7 +85,7 @@ private:
 
             std::cout << std::this_thread::get_id() << ": Taking task" << std::endl;
 
-            Task task = std::move(m_tasks.front());
+            InnerTask task = std::move(m_tasks.front());
             m_tasks.pop();
             locker.unlock();
             task();
@@ -77,7 +93,7 @@ private:
     }
 
     std::vector<std::thread> m_threads;
-    std::queue<Task> m_tasks;
+    std::queue<InnerTask> m_tasks;
     std::mutex m_mutex;
 
     std::condition_variable m_cv;
@@ -91,9 +107,9 @@ ThreadPool::ThreadPool(uint8_t threads)
 
 ThreadPool::~ThreadPool() = default;
 
-void ThreadPool::submit(Task task)
+std::future<int> ThreadPool::submit(Task task)
 {
-    m_impl->submit(std::move(task));
+    return m_impl->submit(std::move(task));
 }
 
 } // namespace core
