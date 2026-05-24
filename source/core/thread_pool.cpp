@@ -65,6 +65,7 @@ public:
                 std::cout << "Error after setting value";
             }
             std::cout << "Inner task after executing task2" << std::endl;
+            delete p;
         };
         m_tasks.emplace(std::move(innerTask));
         m_cv.notify_one();
