@@ -55,16 +55,17 @@ public:
         std::promise<int>* p = new std::promise<int>;
         std::future<int> f = p->get_future();
         InnerTask innerTask = [task, p]() {
-            int result = task();
-            std::cout << "Inner task after executing task" << std::endl;
+            int result = 0;
             try {
-                p->set_value(result);
-            }
-            catch (...)
+                result = task();
+            } catch (std::exception_ptr e)
             {
-                std::cout << "Error after setting value";
+                p->set_exception(e);
             }
-            std::cout << "Inner task after executing task2" << std::endl;
+
+            std::cout << "Inner task after executing task" << std::endl;
+
+            p->set_value(result);
             delete p;
         };
         m_tasks.emplace(std::move(innerTask));
