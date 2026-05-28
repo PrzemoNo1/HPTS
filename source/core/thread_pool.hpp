@@ -1,22 +1,59 @@
 #include <functional>
 #include <memory>
 #include <future>
+#include <vector>
+#include <queue>
+#include <iostream>
 
-using Task = std::function<int()>;
+
+template<typename T>
+using Task = std::function<T()>;
 
 namespace core
 {
+using InnerTask = std::function<void()>;
 
 class ThreadPool
 {
 public:
     ThreadPool(uint8_t threads);
     ~ThreadPool();
-    std::future<int> submit(Task task);
+
+    template<typename T>
+    std::future<T> submit(Task<T> task)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        std::promise<T>* p = new std::promise<T>;
+        std::future<T> f = p->get_future();
+        InnerTask innerTask = [task, p]() {
+            T result = T();
+            try {
+                result = task();
+            } catch (std::exception_ptr e)
+            {
+                p->set_exception(e);
+            }
+
+            std::cout << "Inner task after executing task" << std::endl;
+
+            p->set_value(result);
+            delete p;
+        };
+        m_tasks.emplace(std::move(innerTask));
+        m_cv.notify_one();
+
+        return f;
+    }
 
 private:
-    class Impl;
-    std::unique_ptr<Impl> m_impl;
+    void takeTask();
+
+    std::vector<std::thread> m_threads;
+    std::queue<InnerTask> m_tasks;
+    std::mutex m_mutex;
+
+    std::condition_variable m_cv;
+    bool m_stop = false;
 };
 
 } // namespace core

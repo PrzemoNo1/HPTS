@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 {
     core::ThreadPool tp(2);
     std::future<int> fu =
-    tp.submit([](){
+    tp.submit<int>([](){
         std::cout << "Starting task A submitted from main" << std::endl;
         std::this_thread::sleep_for(THREE_SEC);
         std::cout << "Finished task A" << std::endl;
