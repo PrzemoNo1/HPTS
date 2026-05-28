@@ -14,18 +14,20 @@ int main(int argc, char* argv[])
 {
     core::ThreadPool tp(2);
     std::future<int> fu =
-    tp.submit<int>([](){
+        tp.submit<int>([](){
         std::cout << "Starting task A submitted from main" << std::endl;
         std::this_thread::sleep_for(THREE_SEC);
         std::cout << "Finished task A" << std::endl;
         return 23;
     });
-    //tp.submit([](){ std::cout << "Task B submitted from main" << std::endl; return 13;});
+    std::future<std::string> fu2 =
+        tp.submit<std::string>([](){ std::cout << "Task B submitted from main" << std::endl; return "Lore Ipsum";});
     //tp.submit([](){ std::cout << "Task C submitted from main" << std::endl; });
 
     std::this_thread::sleep_for(std::chrono::seconds(12));
 
-    std::cout << "Future is: " << fu.get() << std::endl;
+    std::cout << "Future int is: " << fu.get() << std::endl;
+    std::cout << "Future std::string is: " << fu2.get() << std::endl;
 
     return 0;
 }
