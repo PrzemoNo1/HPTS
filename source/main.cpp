@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <future>
+#include <string>
 
 std::chrono::milliseconds ONE_SEC(1000);
 std::chrono::milliseconds TWO_SEC(2000);
@@ -22,7 +23,7 @@ int main(int argc, char* argv[])
     });
     std::future<std::string> fu2 =
         tp.submit<std::string>([](){ std::cout << "Task B submitted from main" << std::endl; return "Lore Ipsum";});
-    //tp.submit([](){ std::cout << "Task C submitted from main" << std::endl; });
+    tp.submit<void>([](){ std::cout << "Task C submitted from main" << std::endl; });
 
     std::this_thread::sleep_for(std::chrono::seconds(12));
 
