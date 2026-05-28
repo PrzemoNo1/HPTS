@@ -9,8 +9,6 @@
 namespace core
 {
 // TODO
-// 
-// returning std::future from submit
 // task prioritization
 // work stealing (advanced)
 

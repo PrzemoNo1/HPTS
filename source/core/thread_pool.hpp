@@ -30,28 +30,6 @@ public:
         m_tasks.emplace([pt] () {(*pt)();});
         m_cv.notify_one();
         return f;
-        //===========================================
-        /*std::lock_guard<std::mutex> lock(m_mutex);
-        std::promise<T>* p = new std::promise<T>;
-        std::future<T> f = p->get_future();
-        InnerTask innerTask = [task, p]() {
-            T result = T();
-            try {
-                result = task();
-            } catch (...)
-            {
-                p->set_exception(std::current_exception());
-            }
-
-            std::cout << "Inner task after executing task" << std::endl;
-
-            p->set_value(result);
-            delete p;
-        };
-        m_tasks.emplace(std::move(innerTask));
-        m_cv.notify_one();
-
-        return f;*/
     }
 
 private:
