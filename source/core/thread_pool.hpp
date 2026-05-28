@@ -23,15 +23,24 @@ public:
     std::future<T> submit(Task<T> task)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
+        std::shared_ptr<std::packaged_task<T()>> pt =
+            std::make_shared<std::packaged_task<T()>>(task);
+        std::future<T> f = pt->get_future();
+
+        m_tasks.emplace([pt] () {(*pt)();});
+        m_cv.notify_one();
+        return f;
+        //===========================================
+        /*std::lock_guard<std::mutex> lock(m_mutex);
         std::promise<T>* p = new std::promise<T>;
         std::future<T> f = p->get_future();
         InnerTask innerTask = [task, p]() {
             T result = T();
             try {
                 result = task();
-            } catch (std::exception_ptr e)
+            } catch (...)
             {
-                p->set_exception(e);
+                p->set_exception(std::current_exception());
             }
 
             std::cout << "Inner task after executing task" << std::endl;
@@ -42,7 +51,7 @@ public:
         m_tasks.emplace(std::move(innerTask));
         m_cv.notify_one();
 
-        return f;
+        return f;*/
     }
 
 private:
